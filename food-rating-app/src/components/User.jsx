@@ -1,23 +1,21 @@
-import React, { useState } from "react";
-import { FOODDATA } from "../data/data";
-import { users } from "../data/data";
+import React, { useContext } from "react";
 
-import Posts from "./Posts";
-import { useEffect } from "react";
-import AddMealForm from "./AddMealForm";
+import { Heading } from "@chakra-ui/react";
+
 import MealList from "./MealList";
+import UserNav from "./UserNav";
+import { AuthContext } from "../firebase/context";
 
-const User = ({ match }) => {
-  const [user, setUser] = useState({});
-
-  useEffect(() => {
-    setUser(users.filter((user) => user.userName === match.params.user));
-  }, [match.params.user]);
+const User = () => {
+  const { user } = useContext(AuthContext);
 
   return (
     <main>
-      <h1>Welcome {user[0] ? user[0].name : ""}</h1>
-      <AddMealForm />
+      <UserNav />
+      <Heading style={{ textAlign: "center", color: "black" }} as="h1">
+        Welcome {user && user.displayName}
+      </Heading>
+
       <MealList />
     </main>
   );

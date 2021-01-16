@@ -1,65 +1,121 @@
-import React, { useState, Component, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { users } from "../data/data";
+import React, { useState } from "react";
+import { Link, useHistory } from "react-router-dom";
+
+import firebase from "../firebase/config";
+import ErrorMessage from "./ErrorMessage";
+import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+import {
+  Input,
+  Button,
+  FormControl,
+  FormLabel,
+  InputGroup,
+  InputRightElement,
+  Heading,
+  Flex,
+  Spacer,
+  Text,
+} from "@chakra-ui/react";
 
 const LogIn = () => {
+  /*  const [currentUser, setCurrentUser] = useState(null); */
   const [userDetails, setUserDetails] = useState({
-    userName: "",
+    email: "",
     password: "",
   });
-  const [isUser, setIsUser] = useState(false);
-  const [user, setUser] = useState(users);
+
+  const [show, setShow] = React.useState(false);
+  const [error, setError] = useState("");
+
+  const history = useHistory();
+  const handleClick = () => setShow(!show);
 
   const signInHandler = (e) => {
     setUserDetails({ ...userDetails, [e.target.name]: e.target.value });
   };
 
-  const submitHandler = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const userNameCheck = users.filter(
-      (user) => user.userName === userDetails.userName
-    );
-    if (
-      userNameCheck[0] &&
-      userNameCheck[0].password === userDetails.password
-    ) {
-      setIsUser(true);
-    }
-    /* const userPasswordCheck = userNameCheck.filter(
-      (user) => user.password === userDetails.password
-    );
+    try {
+      const credentials = await firebase
+        .auth()
+        .signInWithEmailAndPassword(userDetails.email, userDetails.password);
 
-    userPasswordCheck.length === 1 && setUser(userPasswordCheck); */
-  };
-  useEffect(() => {
-    if (isUser !== true) {
-      setIsUser(false);
-    } else {
-      setIsUser(true);
+      const displayName = credentials.user.displayName;
+      history.push("/user/" + displayName);
+      /*  setCurrentUser(true); */
+    } catch (error) {
+      console.log(error);
+
+      setError(error);
     }
-  }, [isUser]);
+  };
 
   return (
-    <form autoComplete="off" className="logInContainer">
+    <form className="logInContainer">
       <div className="submitContainer">
-        <label>Username</label>
-        <input type="text" name="userName" onChange={signInHandler} required />
-        <label>Password</label>
-        <input
-          type="password"
-          name="password"
-          onChange={signInHandler}
-          required
-        />
-        <button onClick={submitHandler}>
-          <Link
-            className="link"
-            to={(isUser && `/User/${user[0].userName}`) || "/"}
-          >
+        {error && <ErrorMessage message={error} />}
+        <Heading
+          as="h1"
+          my="5"
+          color="teal.400"
+          fontSize="4xl"
+          fontWeight="extrabold"
+          textAlign="center"
+        >
+          Enter Your LogIn Details
+        </Heading>
+        <FormControl isRequired id="email">
+          <FormLabel className="form-label">email</FormLabel>
+          <Input
+            color="white"
+            type="text"
+            name="email"
+            placeholder="Your user name"
+            onChange={signInHandler}
+            required
+          />
+        </FormControl>
+        <FormControl isRequired id="password" py={4}>
+          <FormLabel className="form-label">Password</FormLabel>
+          <InputGroup size="md">
+            <Input
+              color="white"
+              pr="4.5rem"
+              name="password"
+              type={show ? "text" : "password"}
+              placeholder="Enter password"
+              onChange={signInHandler}
+            />
+            <InputRightElement width="4.5rem">
+              <Button h="1.75rem" size="sm" onClick={handleClick}>
+                {show ? <AiFillEyeInvisible /> : <AiFillEye />}
+              </Button>
+            </InputRightElement>
+          </InputGroup>
+        </FormControl>
+        <Flex borderTop="2px">
+          <Button px="6" mt={4} onClick={handleSubmit}>
             Log In
-          </Link>
-        </button>
+          </Button>
+          <Spacer />
+          <Text
+            mt="5"
+            color="teal.400"
+            fontSize="md"
+            fontWeight="bold"
+            textShadow="1px 0 1px #000000"
+          >
+            Haven't created an account yet?
+          </Text>
+          <Spacer />
+          <Button colorScheme="teal" px="6" mt={4}>
+            <Link className="link" to="/signup">
+              Sign Up
+            </Link>
+          </Button>
+        </Flex>
       </div>
     </form>
   );

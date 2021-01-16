@@ -8,10 +8,29 @@ export const useMeals = () => useContext(FoodContext);
 export default function FoodProvider({ children }) {
   const [meals, setMeals] = useState(FOODDATA);
 
-  const addMeal = ({ title, recipe, description }) => {
+  const addMeal = ({
+    title,
+    recipe,
+    description,
+    image,
+    ingredients,
+    tags,
+  }) => {
+    let ingredientsArray = ingredients.split(",");
+    let recipeArray = recipe.split(",");
+
     const newMeals = [
       ...meals,
-      { id: v4(), rating: 0, title, recipe, description },
+      {
+        id: v4(),
+        rating: 0,
+        title,
+        recipe: recipeArray,
+        description,
+        image,
+        ingredients: ingredientsArray,
+        tags,
+      },
     ];
     setMeals(newMeals);
   };
@@ -21,7 +40,8 @@ export default function FoodProvider({ children }) {
   const rateMeal = (id, rating) => {
     const newMeals = meals.map((meal) => {
       if (meal.id === id) {
-        meal = { ...meal, rating };
+        const newRating = ((meal.rating + rating) / 2).toFixed(2);
+        meal = { ...meal, rating: +newRating };
       }
       return meal;
     });
